@@ -1,0 +1,25 @@
+name: Timetable Check
+on: push
+jobs:
+  run_timetable_check:
+    name: Run Timetable Checker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Python for Parsing Output
+        uses: actions/setup-python@v6
+        with:
+            python-version: '3.14'
+
+      - name: Install RailOSTools
+        run: python -m pip install "git+https://github.com/Railway-Op-Sim/railostools.git@v0.6.3#egg=railostools&subdirectory=python"
+
+      - name: Validate Timetable
+        run: |
+          set -e
+          find -iname "*.ttb" | while read ttb; do
+            echo "Validating $ttb"
+            railostools validate "$ttb" || (echo "Validation failed." && exit 1)
+            echo "Validation succeeded."
+          done
